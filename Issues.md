@@ -24,8 +24,8 @@ const DIR = 'src'
 
 ### Explanation
 
-`get_sid(headers)` in `2.test.js` is expected to produce `xlV693MRp8mRr8XWXRYWxogH` however it is returning:
-`'sid=sNfAVj0y5T6ioMnw%2BkptSx7u; Max-Age=6; Path=/; Expires=Sat, 01 Oct 2022 15:49:42 GMT; HttpOnly; SameSite=Lax'`
+`get_sid(headers)` in `2.test.js` is expected to return `xlV693MRp8mRr8XWXRYWxogH` however it is returning:
+`sid=sNfAVj0y5T6ioMnw%2BkptSx7u; Max-Age=6; Path=/; Expires=Sat, 01 Oct 2022 15:49:42 GMT; HttpOnly; SameSite=Lax`
 
 Original:
 
