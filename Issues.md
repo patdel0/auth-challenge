@@ -25,7 +25,7 @@ const DIR = 'src'
 ### Explanation
 
 `get_sid(headers)` in `2.test.js` is expected to return `xlV693MRp8mRr8XWXRYWxogH` however it is returning:
-`sid=sNfAVj0y5T6ioMnw%2BkptSx7u; Max-Age=6; Path=/; Expires=Sat, 01 Oct 2022 15:49:42 GMT; HttpOnly; SameSite=Lax`
+`sid=s%3ANfAVj0y5T6ioMnw%2BkptSx7u; Max-Age=6; Path=/; Expires=Sat, 01 Oct 2022 15:49:42 GMT; HttpOnly; SameSite=Lax`
 
 Original:
 
@@ -38,7 +38,6 @@ function get_sid(headers) {
 ```
 
 The original `.split('.')` isn't working since the `set-cookie` string doesn't contain `'.'` :
-Also `.replace('sid=s%3A', '')` is looking for `'sid=s%3A'` which doesn't exist in the `headers['set-cookie']` string
 
 ### Solution
 
@@ -48,7 +47,7 @@ Also `.replace('sid=s%3A', '')` is looking for `'sid=s%3A'` which doesn't exist 
 
 function get_sid(headers) {
   const [sid_cookie] = headers['set-cookie'].split(';')
-  const encoded_sid = sid_cookie.replace('sid=', '')
+  const encoded_sid = sid_cookie.replace('sid=s%3A', '')
   return decodeURIComponent(encoded_sid)
 }
 ...
