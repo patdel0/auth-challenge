@@ -223,23 +223,28 @@ function post(req, res) {
 function post(req, res) {
   const { email, password } = req.body
   const user = getUserByEmail(email)
-  if (!email || !password || !user) {
-    return res.status(400).send('<h1>Login failed</h1>')
-  }
-  bcrypt.compare(password, user.hash).then((match) => {
-    if (!match) {
-      // Same error as above so attacker doesn't know if email exists or password is wrong
-      return res.status(400).send('<h1>Login failed</h1>')
-    } else {
-      const session_id = createSession(user.id)
-      res.cookie('sid', session_id, {
-        signed: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-        sameSite: 'lax',
-        httpOnly: true,
-      })
-      res.redirect(`/confessions/${user.id}`)
-    }
+  const error = () => res.status(400).send('<h1>Login faile</h1>')
+  if (!email || !password || !user) return error()
+
+  // [1] Compare submitted password to stored hash
+  bcryptjs.compare(password, user.hash).then((result) => {
+    // [2] If no match redirect back to same page so user can retry
+    if (!result) return error()
+
+    // [3] If match create a session with their user ID,
+    const sid = createSession(user.id)
+
+    // [4] Set a cookie with the session ID,
+    const weekInSeconds = 604800
+    res.cookie('sid', sid, {
+      signed: true,
+      httpOnly: true,
+      maxAge: weekInSeconds,
+      sameSite: 'lax',
+    })
+
+    // [5] Redirect to the user's confession page (e.g. /confessions/3)
+    res.redirect(`/confessions/${user.id}`)
   })
 }
 ```
