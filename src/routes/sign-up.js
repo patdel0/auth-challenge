@@ -32,17 +32,20 @@ function post(req, res) {
   //  * [1] Hash the password
   bcryptjs.hash(password, 12).then((hashedPassword) => {
     //  * [2] Create the user in the DB
-    const userId = createUser(email, hashedPassword)
+    const userId = createUser(email, hashedPassword).id
+
     //  * [3] Create the session with the new user's ID
     const sid = createSession(userId)
+
     //  * [4] Set a cookie with the session ID
     res.cookie('sid', sid, {
       httpOnly: true,
       maxAge: 6000,
       sameSite: 'lax',
     })
+
     //  * [5] Redirect to the user's confession page (e.g. /confessions/3)
-    res.send(`/confessions/${userId}`)
+    res.redirect(`/confessions/${userId}`)
   })
 }
 module.exports = { get, post }

@@ -71,18 +71,35 @@ Before you start implementing features you need a way to create new sessions in 
 1. Return the generated ID (this will be needed to store in a cookie later)
 
 <details>
-<summary>Show solution</summary>
+<summary>Oli's solution</summary>
 
 ```js
 const insert_session = db.prepare(/*sql*/ `
   INSERT INTO sessions (id, user_id, expires_at)
   VALUES ($id, $user_id, DATE('now', '+7 days'))
-`);
+`)
 
 function createSession(user_id) {
-  const id = crypto.randomBytes(18).toString("base64");
-  insert_session.run({ id, user_id });
-  return id;
+  const id = crypto.randomBytes(18).toString('base64')
+  insert_session.run({ id, user_id })
+  return id
+}
+```
+
+</details>
+<details>
+<summary>My Solution</summary>
+
+```js
+const insert_session = db.prepare(/*sql*/ `
+  INSERT INTO sessions
+  VALUES ($sid, $user_id, DATE('now', '+7 days'), DATE('now'))
+`)
+
+function createSession(user_id) {
+  const sid = crypto.randomBytes(18).toString('base64')
+  insert_session.run({ sid, user_id })
+  return sid
 }
 ```
 
@@ -103,21 +120,21 @@ The app currently has no way to sign up for a new account. There is a sign up fo
 
 ```js
 function post(req, res) {
-  const { email, password } = req.body;
+  const { email, password } = req.body
   if (!email || !password) {
-    res.status(400).send("Bad input");
+    res.status(400).send('Bad input')
   } else {
     bcrypt.hash(password, 12).then((hash) => {
-      const user = createUser(email, hash);
-      const session_id = createSession(user.id);
-      res.cookie("sid", session_id, {
+      const user = createUser(email, hash)
+      const session_id = createSession(user.id)
+      res.cookie('sid', session_id, {
         signed: true,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-        sameSite: "lax",
+        sameSite: 'lax',
         httpOnly: true,
-      });
-      res.redirect(`/confessions/${user.id}`);
-    });
+      })
+      res.redirect(`/confessions/${user.id}`)
+    })
   }
 }
 ```
@@ -144,26 +161,26 @@ The app currently has no way to log in to an existing account. There is a log in
 
 ```js
 function post(req, res) {
-  const { email, password } = req.body;
-  const user = getUserByEmail(email);
+  const { email, password } = req.body
+  const user = getUserByEmail(email)
   if (!email || !password || !user) {
-    return res.status(400).send("<h1>Login failed</h1>");
+    return res.status(400).send('<h1>Login failed</h1>')
   }
   bcrypt.compare(password, user.hash).then((match) => {
     if (!match) {
       // Same error as above so attacker doesn't know if email exists or password is wrong
-      return res.status(400).send("<h1>Login failed</h1>");
+      return res.status(400).send('<h1>Login failed</h1>')
     } else {
-      const session_id = createSession(user.id);
-      res.cookie("sid", session_id, {
+      const session_id = createSession(user.id)
+      res.cookie('sid', session_id, {
         signed: true,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-        sameSite: "lax",
+        sameSite: 'lax',
         httpOnly: true,
-      });
-      res.redirect(`/confessions/${user.id}`);
+      })
+      res.redirect(`/confessions/${user.id}`)
     }
-  });
+  })
 }
 ```
 
@@ -183,9 +200,9 @@ This app stores sensitive user info, so it's important to let them log out. You'
 
 ```js
 function get(req, res) {
-  const sid = req.signedCookies.sid;
-  const session = getSession(sid);
-  const title = "Confess your secrets!";
+  const sid = req.signedCookies.sid
+  const session = getSession(sid)
+  const title = 'Confess your secrets!'
   const content = /*html*/ `
     <div class="Cover">
       <h1>${title}</h1>
@@ -195,9 +212,9 @@ function get(req, res) {
           : /*html*/ `<nav><a href="/sign-up">Sign up</a> or <a href="/log-in">log in</a></nav>`
       }
     </div>
-  `;
-  const body = Layout({ title, content });
-  res.send(body);
+  `
+  const body = Layout({ title, content })
+  res.send(body)
 }
 ```
 
@@ -215,10 +232,10 @@ Then you need to edit the `POST /log-out` handler to make this work.
 
 ```js
 function post(req, res) {
-  const sid = req.signedCookies.sid;
-  removeSession(sid);
-  res.clearCookie("sid");
-  res.redirect("/");
+  const sid = req.signedCookies.sid
+  removeSession(sid)
+  res.clearCookie('sid')
+  res.redirect('/')
 }
 ```
 
@@ -239,12 +256,12 @@ Now that you've got user accounts working you need to make sure each user's conf
 
 ```js
 function get(req, res) {
-  const sid = req.signedCookies.sid;
-  const session = getSession(sid);
-  const current_user = session && session.user_id;
-  const page_owner = Number(req.params.user_id);
+  const sid = req.signedCookies.sid
+  const session = getSession(sid)
+  const current_user = session && session.user_id
+  const page_owner = Number(req.params.user_id)
   if (current_user !== page_owner) {
-    return res.status(401).send("<h1>You aren't allowed to see that</h1>");
+    return res.status(401).send("<h1>You aren't allowed to see that</h1>")
   }
   // ...
 }
@@ -268,14 +285,14 @@ Currently anyone can send a request to e.g. `POST /confessions/8` to create conf
 
 ```js
 function post(req, res) {
-  const sid = req.signedCookies.sid;
-  const session = getSession(sid);
-  const current_user = session && session.user_id;
+  const sid = req.signedCookies.sid
+  const session = getSession(sid)
+  const current_user = session && session.user_id
   if (!req.body.content || !current_user) {
-    return res.status(401).send("<h1>Confession failed</h1>");
+    return res.status(401).send('<h1>Confession failed</h1>')
   }
-  createConfession(req.body.content, current_user);
-  res.redirect(`/confessions/${current_user}`);
+  createConfession(req.body.content, current_user)
+  res.redirect(`/confessions/${current_user}`)
 }
 ```
 
@@ -297,15 +314,15 @@ Your app should now have quite a lot of repeated logic to access the current ses
 <summary>Show solution</summary>
 
 ```js
-server.use(sessions);
+server.use(sessions)
 
 function sessions(req, res, next) {
-  const sid = req.signedCookies.sid;
-  const session = getSession(sid);
+  const sid = req.signedCookies.sid
+  const session = getSession(sid)
   if (session) {
-    req.session = session;
+    req.session = session
   }
-  next();
+  next()
 }
 ```
 
@@ -315,9 +332,9 @@ Now you can edit any handlers that access the session to use `req.session` inste
 
 ```js
 function post(req, res) {
-  removeSession(req.session.id);
-  res.clearCookie("sid");
-  res.redirect("/");
+  removeSession(req.session.id)
+  res.clearCookie('sid')
+  res.redirect('/')
 }
 ```
 
@@ -331,19 +348,19 @@ Ideally if a session has expired we want to remove the session and cookie. Centr
 
 ```js
 function sessions(req, res, next) {
-  const sid = req.signedCookies.sid;
-  const session = getSession(sid);
+  const sid = req.signedCookies.sid
+  const session = getSession(sid)
   if (session) {
-    const expiry = new Date(session.expires_at);
-    const today = new Date();
+    const expiry = new Date(session.expires_at)
+    const today = new Date()
     if (expiry < today) {
-      removeSession(sid);
-      res.clearCookie("sid");
+      removeSession(sid)
+      res.clearCookie('sid')
     } else {
-      req.session = session;
+      req.session = session
     }
   }
-  next();
+  next()
 }
 ```
 

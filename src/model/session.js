@@ -7,7 +7,6 @@ const insert_session = db.prepare(/*sql*/ `
 `)
 
 function createSession(user_id) {
-  // to-do
   const sid = crypto.randomBytes(18).toString('base64')
   insert_session.run({ sid, user_id })
   return sid
