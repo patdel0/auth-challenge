@@ -188,7 +188,36 @@ The app currently has no way to log in to an existing account. There is a log in
 1. Redirect to the new user's confession page (e.g. `/confessions/11`)
 
 <details>
-<summary>Show solution</summary>
+<summary>Oli's Solution</summary>
+
+```js
+function post(req, res) {
+  const { email, password } = req.body
+  const user = getUserByEmail(email)
+  if (!email || !password || !user) {
+    return res.status(400).send('<h1>Login failed</h1>')
+  }
+  bcrypt.compare(password, user.hash).then((match) => {
+    if (!match) {
+      // Same error as above so attacker doesn't know if email exists or password is wrong
+      return res.status(400).send('<h1>Login failed</h1>')
+    } else {
+      const session_id = createSession(user.id)
+      res.cookie('sid', session_id, {
+        signed: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+        sameSite: 'lax',
+        httpOnly: true,
+      })
+      res.redirect(`/confessions/${user.id}`)
+    }
+  })
+}
+```
+
+</details>
+<details>
+<summary>My Solution</summary>
 
 ```js
 function post(req, res) {

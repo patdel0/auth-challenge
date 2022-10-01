@@ -28,14 +28,13 @@ function get(req, res) {
 function post(req, res) {
   const { email, password } = req.body
   const user = getUserByEmail(email)
-  if (!email || !password || !user) {
-    return res.status(400).send('<h1>Login failed</h1>')
-  }
+  const error = () => res.status(400).send('<h1>Login faile</h1>')
+  if (!email || !password || !user) return error()
 
   // [1] Compare submitted password to stored hash
   bcryptjs.compare(password, user.hash).then((result) => {
     // [2] If no match redirect back to same page so user can retry
-    if (!result) return res.status(400).send('<h1>Login faile</h1>')
+    if (!result) return error()
 
     // [3] If match create a session with their user ID,
     const sid = createSession(user.id)
