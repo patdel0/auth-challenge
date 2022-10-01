@@ -27,8 +27,8 @@ async function request(pathname, options = {}) {
 }
 
 function get_sid(headers) {
-  const [sid_cookie] = headers['set-cookie'].split(';')
-  const encoded_sid = sid_cookie.replace('sid=', '')
+  const [sid_cookie] = headers['set-cookie'].split('.')
+  const encoded_sid = sid_cookie.replace('sid=s%3A', '')
   return decodeURIComponent(encoded_sid)
 }
 

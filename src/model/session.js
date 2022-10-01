@@ -6,6 +6,10 @@ const insert_session = db.prepare(/*sql*/ `
   VALUES ($sid, $user_id, DATE('now', '+7 days'), DATE('now'))
 `)
 
+function listSessions() {
+  return db.prepare(`SELECT * from sessions`).all()
+}
+
 function createSession(user_id) {
   const sid = crypto.randomBytes(18).toString('base64')
   insert_session.run({ sid, user_id })
@@ -29,4 +33,4 @@ function removeSession(sid) {
   return delete_session.run(sid)
 }
 
-module.exports = { createSession, getSession, removeSession }
+module.exports = { createSession, getSession, removeSession, listSessions }

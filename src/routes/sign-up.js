@@ -1,7 +1,7 @@
 const { Layout } = require('../templates.js')
-const bcryptjs = require('bcryptjs')
 const { createUser } = require('../model/user.js')
 const { createSession } = require('../model/session.js')
+const bcryptjs = require('bcryptjs')
 
 function get(req, res) {
   const title = 'Create an account'
@@ -36,9 +36,9 @@ function post(req, res) {
 
     //  * [3] Create the session with the new user's ID
     const sid = createSession(userId)
-
     //  * [4] Set a cookie with the session ID
     res.cookie('sid', sid, {
+      signed: true,
       httpOnly: true,
       maxAge: 6000,
       sameSite: 'lax',

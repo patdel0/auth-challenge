@@ -116,7 +116,7 @@ The app currently has no way to sign up for a new account. There is a sign up fo
 1. Redirect to the new user's confession page (e.g. `/confessions/11`)
 
 <details>
-<summary>Show solution</summary>
+<summary>Oli's solution</summary>
 
 ```js
 function post(req, res) {
@@ -136,6 +136,37 @@ function post(req, res) {
       res.redirect(`/confessions/${user.id}`)
     })
   }
+}
+```
+
+</details>
+<details>
+<summary>My solution</summary>
+
+```js
+function post(req, res) {
+  const { email, password } = req.body
+  if (!email || !password) return res.status(400).send('Bad input')
+
+  //  * [1] Hash the password
+  bcryptjs.hash(password, 12).then((hashedPassword) => {
+    //  * [2] Create the user in the DB
+    const userId = createUser(email, hashedPassword).id
+
+    //  * [3] Create the session with the new user's ID
+    const sid = createSession(userId)
+
+    //  * [4] Set a cookie with the session ID
+    res.cookie('sid', sid, {
+      signed: true,
+      httpOnly: true,
+      maxAge: 6000,
+      sameSite: 'lax',
+    })
+
+    //  * [5] Redirect to the user's confession page (e.g. /confessions/3)
+    res.redirect(`/confessions/${userId}`)
+  })
 }
 ```
 
