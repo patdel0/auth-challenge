@@ -1,7 +1,10 @@
-const { Layout } = require("../templates.js");
+const { Layout } = require('../templates.js')
+const bcryptjs = require('bcryptjs')
+const { createUser } = require('../model/user.js')
+const { createSession } = require('../model/session.js')
 
 function get(req, res) {
-  const title = "Create an account";
+  const title = 'Create an account'
   const content = /*html*/ `
     <div class="Cover">
       <h1>${title}</h1>
@@ -17,25 +20,29 @@ function get(req, res) {
         <button class="Button">Sign up</button>
       </form>
     </div>
-  `;
-  const body = Layout({ title, content });
-  res.send(body);
+  `
+  const body = Layout({ title, content })
+  res.send(body)
 }
 
 function post(req, res) {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    res.status(400).send("Bad input");
-  } else {
-    res.send("to-do");
-    /**
-     * [1] Hash the password
-     * [2] Create the user in the DB
-     * [3] Create the session with the new user's ID
-     * [4] Set a cookie with the session ID
-     * [5] Redirect to the user's confession page (e.g. /confessions/3)
-     */
-  }
-}
+  const { email, password } = req.body
+  if (!email || !password) return res.status(400).send('Bad input')
 
-module.exports = { get, post };
+  //  * [1] Hash the password
+  bcryptjs.hash(password, 12).then((hashedPassword) => {
+    //  * [2] Create the user in the DB
+    const userId = createUser(email, hashedPassword)
+    //  * [3] Create the session with the new user's ID
+    const sid = createSession(userId)
+    //  * [4] Set a cookie with the session ID
+    res.cookie('sid', sid, {
+      httpOnly: true,
+      maxAge: 6000,
+      sameSite: 'lax',
+    })
+    //  * [5] Redirect to the user's confession page (e.g. /confessions/3)
+    res.send(`/confessions/${userId}`)
+  })
+}
+module.exports = { get, post }
