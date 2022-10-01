@@ -24,7 +24,7 @@ const DIR = 'src'
 
 ### Explanation
 
-The test is expected a signed cookie.
+The test is expecting a signed cookie.
 
 ### Solution
 
@@ -63,7 +63,7 @@ const { status } = await request('/log-in', {
 
 ### Solution
 
-Make sure there is a different email being used in the request header.
+Make sure there is a different email being used in the request options.
 
 ```js
 // test/3.test.js
