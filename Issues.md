@@ -89,3 +89,16 @@ test('POST /log-in with wrong email returns error', async () => {
 ```
 
 </details>
+
+<details>
+  <summary>Challenge 7 - `req.signedCookies` returns undefined</summary>
+
+### Explanation
+
+The cookies middleware was being run after, meaning there wasn't a cookie created when the code ran.
+
+### Solution
+
+Position the challenge 7 middleware function in a way that it runs after cookies in `server.js`
+
+</details>

@@ -1,15 +1,11 @@
 const { listConfessions, createConfession } = require('../model/confessions.js')
-const { getSession } = require('../model/session.js')
 const { Layout } = require('../templates.js')
 
 const error = (res) => res.status(401).send("<h1>Don't be weird! 👀</h1>")
 
 function get(req, res) {
-  const sid = req.signedCookies.sid
-  const userId = getSession(sid)?.user_id
   const pageOwnerId = Number(req.params.user_id)
-
-  if (userId !== pageOwnerId) return error(res)
+  if (req.session?.user_id !== pageOwnerId) return error(res)
 
   const confessions = listConfessions(req.params.user_id)
   const title = 'Your secrets'
@@ -39,9 +35,7 @@ function get(req, res) {
 }
 
 function post(req, res) {
-  const sid = req.signedCookies.sid
-  const userId = getSession(sid)?.user_id
-
+  const userId = req.session?.user_id
   if (!userId) return error(res)
 
   createConfession(req.body.content, userId)

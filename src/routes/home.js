@@ -1,11 +1,8 @@
-const { getSession } = require('../model/session.js')
 const { Layout } = require('../templates.js')
 
 function get(req, res) {
   const title = 'Confess your secrets!'
-  const sid = req.signedCookies.sid
-
-  if (getSession(sid)) return handleLogout(res, title)
+  if (req.session) return handleLogout(res, title)
 
   const content = /*html*/ `
     <div class="Cover">

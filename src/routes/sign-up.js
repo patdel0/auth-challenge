@@ -29,14 +29,10 @@ function post(req, res) {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).send('Bad input')
 
-  //  * [1] Hash the password
   bcryptjs.hash(password, 12).then((hashedPassword) => {
-    //  * [2] Create the user in the DB
     const userId = createUser(email, hashedPassword).id
-
-    //  * [3] Create the session with the new user's ID
     const sid = createSession(userId)
-    //  * [4] Set a cookie with the session ID
+
     res.cookie('sid', sid, {
       signed: true,
       httpOnly: true,
@@ -44,7 +40,6 @@ function post(req, res) {
       sameSite: 'lax',
     })
 
-    //  * [5] Redirect to the user's confession page (e.g. /confessions/3)
     res.redirect(`/confessions/${userId}`)
   })
 }
