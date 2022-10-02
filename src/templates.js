@@ -1,4 +1,4 @@
-module.exports = { Layout };
+module.exports = { Layout }
 
 function Layout({ title, content }) {
   return /*html*/ `
@@ -16,7 +16,7 @@ function Layout({ title, content }) {
         </div>
       </body>
     </html>
-  `;
+  `
 }
 
 const styles = /*css*/ `
@@ -88,4 +88,4 @@ const styles = /*css*/ `
     margin-inline: auto;
   }
 
-`;
+`

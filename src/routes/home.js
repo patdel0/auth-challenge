@@ -1,22 +1,33 @@
-const { Layout } = require("../templates.js");
+const { getSession } = require('../model/session.js')
+const { Layout } = require('../templates.js')
 
 function get(req, res) {
-  /**
-   * [1] Read session ID from cookie
-   * [2] Get session from DB
-   * [3] If the session exists render a log out form
-   * [4] This should submit a request to `POST /log-out`
-   * [5] Else render the sign up/log in links
-   */
-  const title = "Confess your secrets!";
+  const title = 'Confess your secrets!'
+  const sid = req.signedCookies.sid
+
+  if (getSession(sid)) return handleLogout(res, title)
+
   const content = /*html*/ `
     <div class="Cover">
       <h1>${title}</h1>
       <nav><a href="/sign-up">Sign up</a> or <a href="/log-in">log in</a></nav>
     </div>
-  `;
-  const body = Layout({ title, content });
-  res.send(body);
+  `
+  const body = Layout({ title, content })
+  res.send(body)
 }
 
-module.exports = { get };
+function handleLogout(res, title) {
+  res.send(
+    Layout({
+      title,
+      content: /*html*/ `
+        <form action='/log-out' method='POST'>
+        <button>Log Out</button>
+        </form>
+        `,
+    })
+  )
+}
+
+module.exports = { get }

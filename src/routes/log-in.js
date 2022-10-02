@@ -30,7 +30,6 @@ function post(req, res) {
   const user = getUserByEmail(email)
   const error = () => res.status(400).send('<h1>Login faile</h1>')
   if (!email || !password || !user) return error()
-
   // [1] Compare submitted password to stored hash
   bcryptjs.compare(password, user.hash).then((result) => {
     // [2] If no match redirect back to same page so user can retry

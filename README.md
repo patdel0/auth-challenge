@@ -224,17 +224,13 @@ function post(req, res) {
   const { email, password } = req.body
   const user = getUserByEmail(email)
   const error = () => res.status(400).send('<h1>Login faile</h1>')
+
   if (!email || !password || !user) return error()
 
-  // [1] Compare submitted password to stored hash
   bcryptjs.compare(password, user.hash).then((result) => {
-    // [2] If no match redirect back to same page so user can retry
     if (!result) return error()
 
-    // [3] If match create a session with their user ID,
     const sid = createSession(user.id)
-
-    // [4] Set a cookie with the session ID,
     const weekInSeconds = 604800
     res.cookie('sid', sid, {
       signed: true,
@@ -243,7 +239,6 @@ function post(req, res) {
       sameSite: 'lax',
     })
 
-    // [5] Redirect to the user's confession page (e.g. /confessions/3)
     res.redirect(`/confessions/${user.id}`)
   })
 }
@@ -261,9 +256,11 @@ This app stores sensitive user info, so it's important to let them log out. You'
 1. Else render the sign up/log in links
 
 <details>
-<summary>Show solution</summary>
+<summary>Oli's solution</summary>
 
 ```js
+// routes/home.js
+
 function get(req, res) {
   const sid = req.signedCookies.sid
   const session = getSession(sid)
@@ -281,21 +278,54 @@ function get(req, res) {
   const body = Layout({ title, content })
   res.send(body)
 }
+
+// routes/log-out.js
+function post(req, res) {
+  const sid = req.signedCookies.sid
+  removeSession(sid)
+  res.clearCookie('sid')
+  res.redirect('/')
+}
 ```
 
 </details>
 
-Then you need to edit the `POST /log-out` handler to make this work.
-
-1. Get the session ID from the signed cookie
-1. Use the `removeSession` function from `model/session.js` to delete the session from the DB
-1. Clear the `sid` cookie
-1. Redirect back to the homepage
-
 <details>
-<summary>Show solution</summary>
+<summary>My solution</summary>
 
 ```js
+// routes/home.js
+
+function get(req, res) {
+  const title = 'Confess your secrets!'
+  const sid = req.signedCookies.sid
+
+  if (getSession(sid)) return handleLogout(res, title)
+
+  const content = /*html*/ `
+    <div class="Cover">
+      <h1>${title}</h1>
+      <nav><a href="/sign-up">Sign up</a> or <a href="/log-in">log in</a></nav>
+    </div>
+  `
+  const body = Layout({ title, content })
+  res.send(body)
+}
+
+function handleLogout(res, title) {
+  res.send(
+    Layout({
+      title,
+      content: /*html*/ `
+        <form action='/log-out' method='POST'>
+        <button>Log Out</button>
+        </form>
+        `,
+    })
+  )
+}
+
+// routes/log-out.js
 function post(req, res) {
   const sid = req.signedCookies.sid
   removeSession(sid)
