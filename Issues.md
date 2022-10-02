@@ -95,7 +95,7 @@ test('POST /log-in with wrong email returns error', async () => {
 
 ### Explanation
 
-The cookies middleware was being run after, meaning there wasn't a cookie created when the code ran.
+The cookies middleware was being run after my middleware function, meaning there wasn't a cookie created when the code ran.
 
 ### Solution
 
