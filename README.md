@@ -347,7 +347,7 @@ Now that you've got user accounts working you need to make sure each user's conf
 1. If the logged in user is not the page owner send a `401` error response
 
 <details>
-<summary>Show solution</summary>
+<summary>Oli's solution</summary>
 
 ```js
 function get(req, res) {
@@ -360,6 +360,22 @@ function get(req, res) {
   }
   // ...
 }
+```
+
+</details>
+
+<details>
+<summary>My solution</summary>
+
+```js
+function get(req, res) {
+  const sid = req.signedCookies.sid
+  const userId = getSession(sid)?.user_id
+  const pageOwnerId = Number(req.params.user_id)
+
+  if (userId !== pageOwnerId)
+    return res.status(401).send("<h1>Don't be weird! 👀</h1>")
+// ...
 ```
 
 </details>

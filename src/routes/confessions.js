@@ -1,14 +1,14 @@
 const { listConfessions, createConfession } = require('../model/confessions.js')
+const { getSession } = require('../model/session.js')
 const { Layout } = require('../templates.js')
 
 function get(req, res) {
-  // Currently any user can view any other user's private confessions!
-  // We need to ensure only the logged in user can see their page.
-  // [1] Get the session ID from the cookie
-  // [2] Get the session from the DB
-  // [3] Get the logged in user's ID from the session
-  // [4] Get the page owner from the URL params
-  // [5] If the logged in user is not the page owner send a 401 response
+  const sid = req.signedCookies.sid
+  const userId = getSession(sid)?.user_id
+  const pageOwnerId = Number(req.params.user_id)
+
+  if (userId !== pageOwnerId)
+    return res.status(401).send("<h1>Don't be weird! 👀</h1>")
 
   const confessions = listConfessions(req.params.user_id)
   const title = 'Your secrets'
