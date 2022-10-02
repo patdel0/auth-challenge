@@ -2,13 +2,14 @@ const { listConfessions, createConfession } = require('../model/confessions.js')
 const { getSession } = require('../model/session.js')
 const { Layout } = require('../templates.js')
 
+const error = (res) => res.status(401).send("<h1>Don't be weird! 👀</h1>")
+
 function get(req, res) {
   const sid = req.signedCookies.sid
   const userId = getSession(sid)?.user_id
   const pageOwnerId = Number(req.params.user_id)
 
-  if (userId !== pageOwnerId)
-    return res.status(401).send("<h1>Don't be weird! 👀</h1>")
+  if (userId !== pageOwnerId) return error(res)
 
   const confessions = listConfessions(req.params.user_id)
   const title = 'Your secrets'
@@ -38,18 +39,13 @@ function get(req, res) {
 }
 
 function post(req, res) {
-  /**
-   * Currently any user can POST to any other user's confessions (this is bad!)
-   * We can't rely on the URL params. We can only trust the cookie.
-   * [1] Get the session ID from the cookie
-   * [2] Get the session from the DB
-   * [3] Get the logged in user's ID from the session
-   * [4] Use the user ID to create the confession in the DB
-   * [5] Redirect back to the logged in user's confession page
-   */
-  const current_user = Number(req.params.user_id)
-  createConfession(req.body.content, current_user)
-  res.redirect(`/confessions/${current_user}`)
+  const sid = req.signedCookies.sid
+  const userId = getSession(sid)?.user_id
+
+  if (!userId) return error(res)
+
+  createConfession(req.body.content, userId)
+  res.redirect(`/confessions/${userId}`)
 }
 
 module.exports = { get, post }

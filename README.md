@@ -385,14 +385,14 @@ function get(req, res) {
 Currently anyone can send a request to e.g. `POST /confessions/8` to create confessions on that user's page. This is bad! We can't rely on the URL params for this—we can only trust the user ID in the cookie. Confessions should always submit to the logged in user's account.
 
 1. Get the session ID from the signed cookie
-1. Get the session from the DB
-1. Get the logged in user's ID from the session
-1. If there is no logged in user send a `401` error
-1. Use this user ID to create the confession in the DB
-1. Redirect back to the logged in user's confession page
+2. Get the session from the DB
+3. Get the logged in user's ID from the session
+4. If there is no logged in user send a `401` error
+5. Use this user ID to create the confession in the DB
+6. Redirect back to the logged in user's confession page
 
 <details>
-<summary>Show solution</summary>
+<summary>Oli's solution</summary>
 
 ```js
 function post(req, res) {
@@ -404,6 +404,26 @@ function post(req, res) {
   }
   createConfession(req.body.content, current_user)
   res.redirect(`/confessions/${current_user}`)
+}
+```
+
+</details>
+
+<details>
+<summary>My solution</summary>
+
+```js
+const error = (res) => res.status(401).send("<h1>Don't be weird! 👀</h1>")
+
+// ...
+
+function post(req, res) {
+  const sid = req.signedCookies.sid
+  const userId = getSession(sid)?.user_id
+  if (!userId) return error(res)
+
+  createConfession(req.body.content, userId)
+  res.redirect(`/confessions/${userId}`)
 }
 ```
 
