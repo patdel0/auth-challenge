@@ -7,9 +7,9 @@ Practice setting up user accounts and authentication in a Node web app.
 Make sure you have Git and Node (v18) installed.
 
 1. Clone this repo and `cd` into the directory
-1. Run `npm install` to install all the dependencies
-1. Run `npm run seed` to seed the database with some example data
-1. Run `npm run dev` to start the server.  
+2. Run `npm install` to install all the dependencies
+3. Run `npm run seed` to seed the database with some example data
+4. Run `npm run dev` to start the server.  
    This uses the `nodemon` library to auto-restart the server when you save changes.
 
 This app already has the routes and templates created. However the sign up/log in functionality is not implemented, and private pages are visible to anyone. You'll need to fix this.
